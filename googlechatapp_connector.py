@@ -1,27 +1,33 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-# -----------------------------------------
-# Phantom sample App Connector python file
-# -----------------------------------------
+# File: googlechatapp_connector.py
+
+# Copyright (c) Splunk, 2024
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied. See the License for the specific language governing permissions
+# and limitations under the License.
 
 # Python 3 Compatibility imports
 from __future__ import print_function, unicode_literals
 
+import base64
+import json
+
 # Phantom App imports
 import phantom.app as phantom
-from phantom.base_connector import BaseConnector
-from phantom.action_result import ActionResult
-
 # Usage of the consts file is recommended
 # from googlechatapp_consts import *
 import requests
-import json
-import os
-import sys
-import base64
 from bs4 import BeautifulSoup
+from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
 
-from googlechatapp_consts import *
 
 class RetVal(tuple):
 
@@ -162,19 +168,19 @@ class GoogleChatAppConnector(BaseConnector):
             )
 
         return self._process_response(r, action_result)
-    
+
     def encode_token(self, token):
         sample_string_bytes = token.encode("ascii")
         base64_bytes = base64.b64encode(sample_string_bytes)
         base64_string = base64_bytes.decode("ascii")
         return base64_string
-    
+
     def decode_token(self, token_base64):
         base64_bytes = token_base64.encode("ascii")
         sample_string_bytes = base64.b64decode(base64_bytes)
         sample_string = sample_string_bytes.decode("ascii")
         return sample_string
-    
+
     def _generate_new_access_token(self, action_result, grant_type='"authorization_code"'):
         """ This function is used to generate new access token using the code obtained on authorization."""
         token_url = 'https://oauth2.googleapis.com/token'
@@ -184,7 +190,7 @@ class GoogleChatAppConnector(BaseConnector):
                 "client_id": self._client_id,
                 "client_secret": self._client_secret,
                 "refresh_token": self._refresh_token,
-                "grant_type" : grant_type
+                "grant_type": grant_type
             }
         else:
             payload = {
@@ -192,12 +198,12 @@ class GoogleChatAppConnector(BaseConnector):
                 "client_secret": self._client_secret,
                 "code": self._code,
                 "redirect_uri": self._redirect_uri,
-                "grant_type" : "authorization_code"
+                "grant_type": "authorization_code"
             }
 
         ret_val, resp_json = self._make_rest_call(action_result=action_result, url=token_url,
                                                   data=payload, method="post")
-        
+
         if phantom.is_fail(ret_val):
             return action_result.set_status(phantom.APP_ERROR, 'Failure in tokenization process {}'.format(resp_json))
 
@@ -210,7 +216,7 @@ class GoogleChatAppConnector(BaseConnector):
         if grant_type != 'refresh_token':
             self._refresh_token = resp_json.get('refresh_token')
             self._state['refresh_token'] = self.encode_token(resp_json['refresh_token'])
-        
+
         return phantom.APP_SUCCESS
 
     def _handle_test_connectivity(self, param):
@@ -280,8 +286,9 @@ class GoogleChatAppConnector(BaseConnector):
 
         # Add the response into the data section
         action_result.add_data(response)
+        self.save_progress("Message sent to {}".format(parent))
         return action_result.set_status(phantom.APP_SUCCESS, "Message sent to {}".format(parent))
-    
+
     def _handle_read_message(self, param):
         # Implement the handler here
         # use self.save_progress(...) to send progress messages back to the platform
@@ -317,6 +324,7 @@ class GoogleChatAppConnector(BaseConnector):
 
         # Add the response into the data section
         action_result.add_data(response)
+        self.save_progress("Reading message {}".format(name))
         return action_result.set_status(phantom.APP_SUCCESS, "Reading message {}".format(name))
 
     def handle_action(self, param):
@@ -329,7 +337,7 @@ class GoogleChatAppConnector(BaseConnector):
 
         if action_id == 'create_message':
             ret_val = self._handle_create_message(param)
-        
+
         if action_id == 'read_message':
             ret_val = self._handle_read_message(param)
 
@@ -350,8 +358,8 @@ class GoogleChatAppConnector(BaseConnector):
             if self._state.get('refresh_token'):
                 self._refresh_token = self.decode_token(self._state['refresh_token'])
             else:
-                self.save_progress("There is not Refresh token inside the state file, make sure you are runinng test connectivity action "\
-                                 "or do it at first before further app exploration.")
+                self.save_progress("There is not Refresh token inside the state file, make sure you are runinng test connectivity action \
+                                 or do it at first before further app exploration.")
 
         # get the asset config
         config = self.get_config()
@@ -372,18 +380,21 @@ class GoogleChatAppConnector(BaseConnector):
 
 def main():
     import argparse
+    import sys
 
     argparser = argparse.ArgumentParser()
 
     argparser.add_argument('input_test_json', help='Input Test JSON file')
     argparser.add_argument('-u', '--username', help='username', required=False)
     argparser.add_argument('-p', '--password', help='password', required=False)
+    argparser.add_argument('-v', '--verify', action='store_true', help='verify', required=False, default=False)
 
     args = argparser.parse_args()
     session_id = None
 
     username = args.username
     password = args.password
+    verify = args.verify
 
     if username is not None and password is None:
 
@@ -396,7 +407,7 @@ def main():
             login_url = GoogleChatAppConnector._get_phantom_base_url() + '/login'
 
             print("Accessing the Login page")
-            r = requests.get(login_url, verify=False)
+            r = requests.get(login_url, verify=verify)
             csrftoken = r.cookies['csrftoken']
 
             data = dict()
@@ -409,11 +420,11 @@ def main():
             headers['Referer'] = login_url
 
             print("Logging into Platform to get the session id")
-            r2 = requests.post(login_url, verify=False, data=data, headers=headers)
+            r2 = requests.post(login_url, verify=verify, data=data, headers=headers)
             session_id = r2.cookies['sessionid']
         except Exception as e:
             print("Unable to get session id from the platform. Error: " + str(e))
-            exit(1)
+            sys.exit(1)
 
     with open(args.input_test_json) as f:
         in_json = f.read()
@@ -430,7 +441,7 @@ def main():
         ret_val = connector._handle_action(json.dumps(in_json), None)
         print(json.dumps(json.loads(ret_val), indent=4))
 
-    exit(0)
+    sys.exit(0)
 
 
 if __name__ == '__main__':

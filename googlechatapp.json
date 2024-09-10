@@ -4,23 +4,24 @@
     "description": "This app integrate services with Google Chat and manage Chat resources such as i.e messages. Remmeber that user will need authentication code, check Github or SplunkBase for information on how to obtain it",
     "type": "network device",
     "product_vendor": "Google Cloud",
-    "logo": "googlechatapp.svg",
-    "logo_dark": "googlechatapp_dark.svg",
+    "logo": "logo_googlechatapp.svg",
+    "logo_dark": "logo_googlechatapp_dark.svg",
     "product_name": "Google Chat App",
     "python_version": "3",
     "product_version_regex": ".*",
-    "publisher": "Splunk",
+    "publisher": "Splunk Community",
     "contributors": [
         {
             "name": "Patryk Dros"
         }
     ],
     "license": "Copyright (c) Splunk, 2024",
-    "app_version": "1.0.2",
+    "app_version": "1.0.0",
     "utctime_updated": "2024-04-16T15:27:25.341827Z",
     "package_name": "phantom_googlechatapp",
     "main_module": "googlechatapp_connector.py",
     "min_phantom_version": "6.1.1.211",
+    "fips_compliant": false,
     "app_wizard_version": "1.0.0",
     "configuration": {
         "client_id": {
@@ -36,7 +37,7 @@
             "order": 1
         },
         "code": {
-            "description": "Code to receive authorization token. Read README.md on how to obtain this.",
+            "description": "Code to receive authorization token. Read README.md on how to obtain this",
             "data_type": "password",
             "required": true,
             "order": 2
@@ -54,7 +55,6 @@
             "action": "test connectivity",
             "identifier": "test_connectivity",
             "description": "Validate the asset configuration for connectivity using supplied configuration",
-            "verbose": "",
             "type": "test",
             "read_only": true,
             "parameters": {},
@@ -64,32 +64,29 @@
         {
             "action": "create message",
             "identifier": "create_message",
-            "description": "Creates a message in a Google Chat space.",
-            "verbose": "",
+            "description": "Creates a message in a Google Chat space",
             "type": "generic",
             "read_only": false,
             "parameters": {
                 "parent_space": {
-                    "description": "The resource name of the space in which to create a message. Remember parent has match pattern: /^spaces\/[^/]+$/",
+                    "description": "The resource name of the space in which to create a message. Remember parent has match pattern: /^spaces/[^/]+$/",
                     "data_type": "string",
                     "required": true,
-                    "primary": true,
                     "order": 0
                 },
                 "text_message": {
                     "description": "Message content",
                     "data_type": "string",
                     "required": true,
-                    "primary": true,
                     "order": 1
                 },
                 "requestid": {
-                    "description": "A unique request ID for this message. Specifying an existing request ID returns the message created with that ID instead of creating a new message.",
+                    "description": "A unique request ID for this message. Specifying an existing request ID returns the message created with that ID instead of creating a new message",
                     "data_type": "string",
                     "order": 2
                 },
                 "messagereplyoption": {
-                    "description": "Specifies whether a message starts a thread or replies to one. Only supported in named spaces.",
+                    "description": "Specifies whether a message starts a thread or replies to one. Only supported in named spaces",
                     "data_type": "string",
                     "value_list": [
                         "MESSAGE_REPLY_OPTION_UNSPECIFIED",
@@ -99,16 +96,12 @@
                     "order": 3
                 },
                 "messageid": {
-                    "description": "A custom ID for a message.",
+                    "description": "A custom ID for a message",
                     "data_type": "string",
                     "order": 4
                 }
             },
             "output": [
-                {
-                    "data_path": "action_result.parameter.parent",
-                    "data_type": "string"
-                },
                 {
                     "data_path": "action_result.parameter.text_message",
                     "data_type": "string"
@@ -127,7 +120,11 @@
                 },
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.message",
@@ -150,16 +147,14 @@
         {
             "action": "read message",
             "identifier": "read_message",
-            "description": "Returns details about a message.",
-            "verbose": "",
+            "description": "Returns details about a message",
             "type": "generic",
             "read_only": false,
             "parameters": {
                 "name": {
-                    "description": "Required. Resource name of the message. Remember name has match pattern: /^spaces\/[^/]+\/messages\/[^/]+$/. Example: spaces/koB0FMAAAAE/messages/dd0BuBH2QzM.dd0BuBH2QzM",
+                    "description": "Required. Resource name of the message. Remember name has match pattern: /^spaces/[^/]+/messages/[^/]+$/. Example: spaces/koB0FMAAAAE/messages/dd0BuBH2QzM.dd0BuBH2QzM",
                     "data_type": "string",
                     "required": true,
-                    "primary": true,
                     "order": 0
                 }
             },
@@ -206,7 +201,11 @@
                 },
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.message",

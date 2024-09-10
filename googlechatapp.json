@@ -103,6 +103,10 @@
             },
             "output": [
                 {
+                    "data_path": "action_result.parameter.parent_space",
+                    "data_type": "string"
+                },
+                {
                     "data_path": "action_result.parameter.text_message",
                     "data_type": "string"
                 },

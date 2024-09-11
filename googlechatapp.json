@@ -43,8 +43,8 @@
             "order": 2
         },
         "redirect_uri": {
-            "data_type": "string",
             "description": "Redirect URL for authorization",
+            "data_type": "string",
             "required": true,
             "default": "http://localhost",
             "order": 3
@@ -152,11 +152,11 @@
             "action": "read message",
             "identifier": "read_message",
             "description": "Returns details about a message",
-            "type": "generic",
-            "read_only": false,
+            "type": "investigate",
+            "read_only": true,
             "parameters": {
                 "name": {
-                    "description": "Required. Resource name of the message. Remember name has match pattern: /^spaces/[^/]+/messages/[^/]+$/. Example: spaces/koB0FMAAAAE/messages/dd0BuBH2QzM.dd0BuBH2QzM",
+                    "description": "Resource name of the message. Remember name has match pattern: /^spaces/[^/]+/messages/[^/]+$/. Example: spaces/koB0FMAAAAE/messages/dd0BuBH2QzM.dd0BuBH2QzM",
                     "data_type": "string",
                     "required": true,
                     "order": 0

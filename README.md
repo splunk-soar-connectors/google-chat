@@ -1,16 +1,17 @@
-# google-chat-app
+[comment]: # "Auto-generated SOAR connector documentation"
+# Google Chat App
 
-Publisher: Splunk  
-Connector Version: 1\.0\.0  
+Publisher: Splunk Community  
+Connector Version: 1.0.0  
 Product Vendor: Google Cloud  
 Product Name: Google Chat App  
-Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 6\.1\.1  
+Product Version Supported (regex): ".\*"  
+Minimum Product Version: 6.1.1.211  
 
 App repository to integrate services with Google Chat and manage Chat resources such as i.e messages on Splunk SOAR.
 
 [comment]: # " File: README.md"
-[comment]: # "  Copyright (c) 2019-2023 Splunk Inc."
+[comment]: # "  Copyright (c) 2019-2024 Splunk Inc."
 [comment]: # ""
 [comment]: # "Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "you may not use this file except in compliance with the License."
@@ -90,3 +91,88 @@ action\_result\.summary | string |
 action\_result\.message | string | 
 summary\.total\_objects | numeric | 
 summary\.total\_objects\_successful | numeric |   
+
+
+### Configuration Variables
+The below configuration variables are required for this Connector to operate.  These variables are specified when configuring a Google Chat App asset in SOAR.
+
+VARIABLE | REQUIRED | TYPE | DESCRIPTION
+-------- | -------- | ---- | -----------
+**client_id** |  required  | string | Auth application Client ID
+**client_secret** |  required  | password | Auth application Client Secret
+**code** |  required  | password | Code to receive authorization token. Read README.md on how to obtain this
+**redirect_uri** |  required  | string | Redirect URL for authorization
+
+### Supported Actions  
+[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using supplied configuration  
+[create message](#action-create-message) - Creates a message in a Google Chat space  
+[read message](#action-read-message) - Returns details about a message  
+
+## action: 'test connectivity'
+Validate the asset configuration for connectivity using supplied configuration
+
+Type: **test**  
+Read only: **True**
+
+#### Action Parameters
+No parameters are required for this action
+
+#### Action Output
+No Output  
+
+## action: 'create message'
+Creates a message in a Google Chat space
+
+Type: **generic**  
+Read only: **False**
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**parent_space** |  required  | The resource name of the space in which to create a message. Remember parent has match pattern: /^spaces/[^/]+$/ | string | 
+**text_message** |  required  | Message content | string | 
+**requestid** |  optional  | A unique request ID for this message. Specifying an existing request ID returns the message created with that ID instead of creating a new message | string | 
+**messagereplyoption** |  optional  | Specifies whether a message starts a thread or replies to one. Only supported in named spaces | string | 
+**messageid** |  optional  | A custom ID for a message | string | 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
+--------- | ---- | -------- | --------------
+action_result.parameter.parent_space | string |  |  
+action_result.parameter.text_message | string |  |  
+action_result.parameter.requestid | string |  |  
+action_result.parameter.messagereplyoption | string |  |  
+action_result.parameter.messageid | string |  |  
+action_result.status | string |  |   success  failed 
+action_result.message | string |  |  
+summary.total_objects | numeric |  |  
+summary.total_objects_successful | numeric |  |    
+
+## action: 'read message'
+Returns details about a message
+
+Type: **generic**  
+Read only: **False**
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**name** |  required  | Required. Resource name of the message. Remember name has match pattern: /^spaces/[^/]+/messages/[^/]+$/. Example: spaces/koB0FMAAAAE/messages/dd0BuBH2QzM.dd0BuBH2QzM | string | 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
+--------- | ---- | -------- | --------------
+action_result.parameter.name | string |  |  
+action_result.data.name | string |  |  
+action_result.data.sender.name | string |  |  
+action_result.data.sender.type | string |  |  
+action_result.data.createTime | string |  |  
+action_result.data.text | string |  |  
+action_result.data.thread.name | string |  |  
+action_result.data.space.name | string |  |  
+action_result.data.argumentText | string |  |  
+action_result.data.formattedText | string |  |  
+action_result.status | string |  |   success  failed 
+action_result.message | string |  |  
+summary.total_objects | numeric |  |  
+summary.total_objects_successful | numeric |  |  

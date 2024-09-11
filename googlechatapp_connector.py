@@ -21,12 +21,13 @@ import json
 
 # Phantom App imports
 import phantom.app as phantom
-# Usage of the consts file is recommended
-# from googlechatapp_consts import *
 import requests
 from bs4 import BeautifulSoup
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
+
+# Usage of the consts file is recommended
+from googlechatapp_consts import *
 
 
 class RetVal(tuple):
@@ -407,7 +408,7 @@ def main():
             login_url = GoogleChatAppConnector._get_phantom_base_url() + '/login'
 
             print("Accessing the Login page")
-            r = requests.get(login_url, verify=verify)
+            r = requests.get(login_url, verify=verify, timeout=FS_DEFAULT_TIMEOUT)
             csrftoken = r.cookies['csrftoken']
 
             data = dict()
@@ -420,7 +421,7 @@ def main():
             headers['Referer'] = login_url
 
             print("Logging into Platform to get the session id")
-            r2 = requests.post(login_url, verify=verify, data=data, headers=headers)
+            r2 = requests.post(login_url, verify=verify, data=data, headers=headers, timeout=FS_DEFAULT_TIMEOUT)
             session_id = r2.cookies['sessionid']
         except Exception as e:
             print("Unable to get session id from the platform. Error: " + str(e))

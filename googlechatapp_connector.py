@@ -60,11 +60,7 @@ class GoogleChatAppConnector(BaseConnector):
         if response.status_code == 200:
             return RetVal(phantom.APP_SUCCESS, {})
 
-        return RetVal(
-            action_result.set_status(
-                phantom.APP_ERROR, "Empty response and no information in the header"
-            ), None
-        )
+        return RetVal(action_result.set_status(phantom.APP_ERROR, "Empty response and no information in the header"), None)
 
     def _process_html_response(self, response, action_result):
         # An html response, treat it like an error
@@ -73,15 +69,15 @@ class GoogleChatAppConnector(BaseConnector):
         try:
             soup = BeautifulSoup(response.text, "html.parser")
             error_text = soup.text
-            split_lines = error_text.split('\n')
+            split_lines = error_text.split("\n")
             split_lines = [x.strip() for x in split_lines if x.strip()]
-            error_text = '\n'.join(split_lines)
+            error_text = "\n".join(split_lines)
         except:
             error_text = "Cannot parse error details"
 
         message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code, error_text)
 
-        message = message.replace(u'{', '{{').replace(u'}', '}}')
+        message = message.replace("{", "{{").replace("}", "}}")
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
     def _process_json_response(self, r, action_result):
@@ -89,42 +85,35 @@ class GoogleChatAppConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            return RetVal(
-                action_result.set_status(
-                    phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(str(e))
-                ), None
-            )
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(str(e))), None)
 
         # Please specify the status codes here
         if 200 <= r.status_code < 399:
             return RetVal(phantom.APP_SUCCESS, resp_json)
 
         # You should process the error returned in the json
-        message = "Error from server. Status Code: {0} Data from server: {1}".format(
-            r.status_code,
-            r.text.replace(u'{', '{{').replace(u'}', '}}')
-        )
+        message = "Error from server. Status Code: {0} Data from server: {1}".format(r.status_code, r.text.replace("{", "{{").replace("}", "}}"))
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), message)
 
     def _process_response(self, r, action_result):
         # store the r_text in debug data, it will get dumped in the logs if the action fails
-        if hasattr(action_result, 'add_debug_data'):
-            action_result.add_debug_data({'r_status_code': r.status_code})
-            action_result.add_debug_data({'r_text': r.text})
-            action_result.add_debug_data({'r_headers': r.headers})
+        if hasattr(action_result, "add_debug_data"):
+            action_result.add_debug_data({"r_status_code": r.status_code})
+            action_result.add_debug_data({"r_text": r.text})
+            action_result.add_debug_data({"r_headers": r.headers})
 
         # Process each 'Content-Type' of response separately
 
         # Process a json response
-        if 'json' in r.headers.get('Content-Type', ''):
+        if "json" in r.headers.get("Content-Type", ""):
             return self._process_json_response(r, action_result)
 
         # Process an HTML response, Do this no matter what the api talks.
         # There is a high chance of a PROXY in between phantom and the rest of
         # world, in case of errors, PROXY's return HTML, this function parses
         # the error and adds it to the action_result.
-        if 'html' in r.headers.get('Content-Type', ''):
+        if "html" in r.headers.get("Content-Type", ""):
             return self._process_html_response(r, action_result)
 
         # it's not content-type that is to be parsed, handle an empty response
@@ -133,8 +122,7 @@ class GoogleChatAppConnector(BaseConnector):
 
         # everything else is actually an error at this point
         message = "Can't process response from server. Status Code: {0} Data from server: {1}".format(
-            r.status_code,
-            r.text.replace('{', '{{').replace('}', '}}')
+            r.status_code, r.text.replace("{", "{{").replace("}", "}}")
         )
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
@@ -149,24 +137,17 @@ class GoogleChatAppConnector(BaseConnector):
         try:
             request_func = getattr(requests, method)
         except AttributeError:
-            return RetVal(
-                action_result.set_status(phantom.APP_ERROR, "Invalid method: {0}".format(method)),
-                resp_json
-            )
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Invalid method: {0}".format(method)), resp_json)
 
         try:
             r = request_func(
                 url,
                 # auth=(username, password),  # basic authentication
-                verify=config.get('verify_server_cert', False),
-                **kwargs
+                verify=config.get("verify_server_cert", False),
+                **kwargs,
             )
         except Exception as e:
-            return RetVal(
-                action_result.set_status(
-                    phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(str(e))
-                ), resp_json
-            )
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(str(e))), resp_json)
 
         return self._process_response(r, action_result)
 
@@ -183,15 +164,15 @@ class GoogleChatAppConnector(BaseConnector):
         return sample_string
 
     def _generate_new_access_token(self, action_result, grant_type='"authorization_code"'):
-        """ This function is used to generate new access token using the code obtained on authorization."""
-        token_url = 'https://oauth2.googleapis.com/token'
+        """This function is used to generate new access token using the code obtained on authorization."""
+        token_url = "https://oauth2.googleapis.com/token"
 
-        if grant_type == 'refresh_token':
+        if grant_type == "refresh_token":
             payload = {
                 "client_id": self._client_id,
                 "client_secret": self._client_secret,
                 "refresh_token": self._refresh_token,
-                "grant_type": grant_type
+                "grant_type": grant_type,
             }
         else:
             payload = {
@@ -199,24 +180,23 @@ class GoogleChatAppConnector(BaseConnector):
                 "client_secret": self._client_secret,
                 "code": self._code,
                 "redirect_uri": self._redirect_uri,
-                "grant_type": "authorization_code"
+                "grant_type": "authorization_code",
             }
 
-        ret_val, resp_json = self._make_rest_call(action_result=action_result, url=token_url,
-                                                  data=payload, method="post")
+        ret_val, resp_json = self._make_rest_call(action_result=action_result, url=token_url, data=payload, method="post")
 
         if phantom.is_fail(ret_val):
-            return action_result.set_status(phantom.APP_ERROR, 'Failure in tokenization process {}'.format(resp_json))
+            return action_result.set_status(phantom.APP_ERROR, "Failure in tokenization process {}".format(resp_json))
 
         try:
-            self._access_token = resp_json['access_token']
+            self._access_token = resp_json["access_token"]
         except:
-            return action_result.set_status(phantom.APP_ERROR, 'There is no access token inside request response: {}'.format(resp_json))
+            return action_result.set_status(phantom.APP_ERROR, "There is no access token inside request response: {}".format(resp_json))
 
-        self._state['access_token'] = self.encode_token(resp_json['access_token'])
-        if grant_type != 'refresh_token':
-            self._refresh_token = resp_json.get('refresh_token')
-            self._state['refresh_token'] = self.encode_token(resp_json['refresh_token'])
+        self._state["access_token"] = self.encode_token(resp_json["access_token"])
+        if grant_type != "refresh_token":
+            self._refresh_token = resp_json.get("refresh_token")
+            self._state["refresh_token"] = self.encode_token(resp_json["refresh_token"])
 
         return phantom.APP_SUCCESS
 
@@ -246,7 +226,7 @@ class GoogleChatAppConnector(BaseConnector):
         # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        gen_ret_val = self._generate_new_access_token(action_result, grant_type='refresh_token')
+        gen_ret_val = self._generate_new_access_token(action_result, grant_type="refresh_token")
         if phantom.is_fail(gen_ret_val):
             # the call to the 3rd party device or service failed, action result should contain all the error details
             # for now the return is commented out, but after implementation, return from here
@@ -255,32 +235,25 @@ class GoogleChatAppConnector(BaseConnector):
         # Access action parameters passed in the 'param' dictionary
 
         # Required values can be accessed directly
-        parent = param['parent_space']
-        json_content = {
-            "text": param['text_message']
-        }
+        parent = param["parent_space"]
+        json_content = {"text": param["text_message"]}
 
         # Optional values should use the .get() function
         parameters = {}
 
-        if param.get('requestid'):
-            parameters.update({'requestid': param.get('requestid')})
-        if param.get('messagereplyoption'):
-            parameters.update({'messagereplyoption': param.get('messagereplyoption')})
-        if param.get('messageid'):
-            parameters.update({'messageid': param.get('messageid')})
+        if param.get("requestid"):
+            parameters.update({"requestid": param.get("requestid")})
+        if param.get("messagereplyoption"):
+            parameters.update({"messagereplyoption": param.get("messagereplyoption")})
+        if param.get("messageid"):
+            parameters.update({"messageid": param.get("messageid")})
 
-        headers = {
-            "Authorization": "Bearer " + self._access_token,
-            "Content-Type": "application/json; charset=utf-8"
-        }
+        headers = {"Authorization": "Bearer " + self._access_token, "Content-Type": "application/json; charset=utf-8"}
 
-        url = self._base_url + '/v1/{}/messages'.format(parent)
+        url = self._base_url + "/v1/{}/messages".format(parent)
 
         # make rest call
-        ret_val, response = self._make_rest_call(
-            url, action_result, method='post', params=parameters, headers=headers, json=json_content
-        )
+        ret_val, response = self._make_rest_call(url, action_result, method="post", params=parameters, headers=headers, json=json_content)
 
         if phantom.is_fail(ret_val):
             return action_result.set_status(phantom.APP_ERROR, "Create message request failed: {}".format(response))
@@ -298,7 +271,7 @@ class GoogleChatAppConnector(BaseConnector):
         # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        gen_ret_val = self._generate_new_access_token(action_result, grant_type='refresh_token')
+        gen_ret_val = self._generate_new_access_token(action_result, grant_type="refresh_token")
         if phantom.is_fail(gen_ret_val):
             # the call to the 3rd party device or service failed, action result should contain all the error details
             # for now the return is commented out, but after implementation, return from here
@@ -307,18 +280,13 @@ class GoogleChatAppConnector(BaseConnector):
         # Access action parameters passed in the 'param' dictionary
 
         # Required values can be accessed directly
-        name = param['name']
-        url = self._base_url + '/v1/{}'.format(name)
+        name = param["name"]
+        url = self._base_url + "/v1/{}".format(name)
 
-        headers = {
-            "Authorization": "Bearer " + self._access_token,
-            "Content-Type": "application/json; charset=utf-8"
-        }
+        headers = {"Authorization": "Bearer " + self._access_token, "Content-Type": "application/json; charset=utf-8"}
 
         # make rest call
-        ret_val, response = self._make_rest_call(
-            url, action_result, method='get', params=None, headers=headers
-        )
+        ret_val, response = self._make_rest_call(url, action_result, method="get", params=None, headers=headers)
 
         if phantom.is_fail(ret_val):
             return action_result.set_status(phantom.APP_ERROR, "Read message request failed: {}".format(response))
@@ -336,13 +304,13 @@ class GoogleChatAppConnector(BaseConnector):
 
         self.debug_print("action_id", self.get_action_identifier())
 
-        if action_id == 'create_message':
+        if action_id == "create_message":
             ret_val = self._handle_create_message(param)
 
-        if action_id == 'read_message':
+        if action_id == "read_message":
             ret_val = self._handle_read_message(param)
 
-        if action_id == 'test_connectivity':
+        if action_id == "test_connectivity":
             ret_val = self._handle_test_connectivity(param)
 
         return ret_val
@@ -356,20 +324,22 @@ class GoogleChatAppConnector(BaseConnector):
             self.debug_print("Resetting the state file with the default format")
             self._state = {"app_version": self.get_app_json().get("app_version")}
         else:
-            if self._state.get('refresh_token'):
-                self._refresh_token = self.decode_token(self._state['refresh_token'])
+            if self._state.get("refresh_token"):
+                self._refresh_token = self.decode_token(self._state["refresh_token"])
             else:
-                self.save_progress("There is not Refresh token inside the state file, make sure you are runinng test connectivity action \
-                                 or do it at first before further app exploration.")
+                self.save_progress(
+                    "There is not Refresh token inside the state file, make sure you are runinng test connectivity action \
+                                 or do it at first before further app exploration."
+                )
 
         # get the asset config
         config = self.get_config()
-        self._client_id = config['client_id']
-        self._client_secret = config['client_secret']
-        self._code = config['code']
-        self._redirect_uri = config['redirect_uri']
+        self._client_id = config["client_id"]
+        self._client_secret = config["client_secret"]
+        self._code = config["code"]
+        self._redirect_uri = config["redirect_uri"]
 
-        self._base_url = 'https://chat.googleapis.com'
+        self._base_url = "https://chat.googleapis.com"
 
         return phantom.APP_SUCCESS
 
@@ -385,10 +355,10 @@ def main():
 
     argparser = argparse.ArgumentParser()
 
-    argparser.add_argument('input_test_json', help='Input Test JSON file')
-    argparser.add_argument('-u', '--username', help='username', required=False)
-    argparser.add_argument('-p', '--password', help='password', required=False)
-    argparser.add_argument('-v', '--verify', action='store_true', help='verify', required=False, default=False)
+    argparser.add_argument("input_test_json", help="Input Test JSON file")
+    argparser.add_argument("-u", "--username", help="username", required=False)
+    argparser.add_argument("-p", "--password", help="password", required=False)
+    argparser.add_argument("-v", "--verify", action="store_true", help="verify", required=False, default=False)
 
     args = argparser.parse_args()
     session_id = None
@@ -401,28 +371,29 @@ def main():
 
         # User specified a username but not a password, so ask
         import getpass
+
         password = getpass.getpass("Password: ")
 
     if username and password:
         try:
-            login_url = GoogleChatAppConnector._get_phantom_base_url() + '/login'
+            login_url = GoogleChatAppConnector._get_phantom_base_url() + "/login"
 
             print("Accessing the Login page")
             r = requests.get(login_url, verify=verify, timeout=FS_DEFAULT_TIMEOUT)
-            csrftoken = r.cookies['csrftoken']
+            csrftoken = r.cookies["csrftoken"]
 
             data = dict()
-            data['username'] = username
-            data['password'] = password
-            data['csrfmiddlewaretoken'] = csrftoken
+            data["username"] = username
+            data["password"] = password
+            data["csrfmiddlewaretoken"] = csrftoken
 
             headers = dict()
-            headers['Cookie'] = 'csrftoken=' + csrftoken
-            headers['Referer'] = login_url
+            headers["Cookie"] = "csrftoken=" + csrftoken
+            headers["Referer"] = login_url
 
             print("Logging into Platform to get the session id")
             r2 = requests.post(login_url, verify=verify, data=data, headers=headers, timeout=FS_DEFAULT_TIMEOUT)
-            session_id = r2.cookies['sessionid']
+            session_id = r2.cookies["sessionid"]
         except Exception as e:
             print("Unable to get session id from the platform. Error: " + str(e))
             sys.exit(1)
@@ -436,8 +407,8 @@ def main():
         connector.print_progress_message = True
 
         if session_id is not None:
-            in_json['user_session_token'] = session_id
-            connector._set_csrf_info(csrftoken, headers['Referer'])
+            in_json["user_session_token"] = session_id
+            connector._set_csrf_info(csrftoken, headers["Referer"])
 
         ret_val = connector._handle_action(json.dumps(in_json), None)
         print(json.dumps(json.loads(ret_val), indent=4))
@@ -445,5 +416,5 @@ def main():
     sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -8,7 +8,7 @@ Product Name: Google Chat App
 Product Version Supported (regex): ".\*"  
 Minimum Product Version: 6.1.1.211  
 
-App repository to integrate services with Google Chat and manage Chat resources such as i.e messages on Splunk SOAR.
+This app integrate services with Google Chat and manage Chat resources such as i.e messages. Remmeber that user will need authentication code, check Github or SplunkBase for information on how to obtain it
 
 [comment]: # " File: README.md"
 [comment]: # "  Copyright (c) 2019-2024 Splunk Inc."
@@ -36,62 +36,6 @@ and pass all veryfication, at the end in new url user will see code variable, ex
 4/0AeaYSHBzshfJQe5ccwX25jAGkzR5TFNkEyDTL8NrSnqQj4VboVd2TlLx50h6_a7OiG8ZHA
 ```
 Thanks to this we can start asset configuration with all required fields. 
-
-### Configuration Variables
-The below configuration variables are required for this Connector to operate.  These variables are specified when configuring a EC2 asset in SOAR.
-
-VARIABLE | REQUIRED | TYPE | DESCRIPTION
--------- | -------- | ---- | -----------
-**client\_id** |  required  | string | Auth application Client ID
-**client\_secret** |  required  | password | Auth application Client Secret
-**code** |  required  | password | Code to receive authorization token
-**redirect\_uri** |  required  | bollean | Redirect URL for authorization
-
-### Supported Actions  
-[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity to obatin access token  
-[create message](#action-get-connection-information) - Creates a message in a Google Chat space  
-
-## action: 'test connectivity'
-Validate the asset configuration for connectivity to obtain access token
-
-Type: **test**  
-Read only: **True**
-
-#### Action Parameters
-No parameters are required for this action
-
-#### Action Output
-Encrypet Access token and Refresh token in state file
-
-## action: 'create message'
-Creates a message in a Google Chat space
-
-Type: **generic**  
-Read only: **False**
-
-#### Action Parameters
-PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
---------- | -------- | ----------- | ---- | --------
-**parent\_space** |  required  | The resource name of the space in which to create a message. | string | 
-**text\_message** |  required  | Message content. | string | 
-**requestid** |  optional  | A unique request ID for this message. Specifying an existing request ID returns the message created with that ID instead of creating a new message. | string | 
-**messagereplyoption** |  optional  | Specifies whether a message starts a thread or replies to one. Only supported in named spaces. | string | 
-**messageid** |  optional  | A custom ID for a message. | string | 
-
-#### Action Output
-DATA PATH | TYPE | CONTAINS
---------- | ---- | --------
-action\_result\.status | string | 
-action\_result\.parameter\.parent\_space | string | 
-action\_result\.parameter\.text\_message | string | 
-action\_result\.parameter\.requestid | string | 
-action\_result\.parameter\.messagereplyoption | string | 
-action\_result\.parameter\.messageid | string | 
-action\_result\.summary | string | 
-action\_result\.message | string | 
-summary\.total\_objects | numeric | 
-summary\.total\_objects\_successful | numeric |   
-
 
 ### Configuration Variables
 The below configuration variables are required for this Connector to operate.  These variables are specified when configuring a Google Chat App asset in SOAR.
@@ -151,13 +95,13 @@ summary.total_objects_successful | numeric |  |
 ## action: 'read message'
 Returns details about a message
 
-Type: **generic**  
-Read only: **False**
+Type: **investigate**  
+Read only: **True**
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
-**name** |  required  | Required. Resource name of the message. Remember name has match pattern: /^spaces/[^/]+/messages/[^/]+$/. Example: spaces/koB0FMAAAAE/messages/dd0BuBH2QzM.dd0BuBH2QzM | string | 
+**name** |  required  | Resource name of the message. Remember name has match pattern: /^spaces/[^/]+/messages/[^/]+$/. Example: spaces/koB0FMAAAAE/messages/dd0BuBH2QzM.dd0BuBH2QzM | string | 
 
 #### Action Output
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES

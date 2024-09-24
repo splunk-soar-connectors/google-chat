@@ -2,7 +2,7 @@
 # Google Chat App
 
 Publisher: Splunk Community  
-Connector Version: 1.0.0  
+Connector Version: 1.0.1  
 Product Vendor: Google Cloud  
 Product Name: Google Chat App  
 Product Version Supported (regex): ".\*"  
@@ -35,7 +35,7 @@ and pass all veryfication, at the end in new url user will see code variable, ex
 ```bash
 4/0AeaYSHBzshfJQe5ccwX25jAGkzR5TFNkEyDTL8NrSnqQj4VboVd2TlLx50h6_a7OiG8ZHA
 ```
-Thanks to this we can start asset configuration with all required fields. 
+Thanks to this we can start asset configuration with all required fields.
 
 ### Configuration Variables
 The below configuration variables are required for this Connector to operate.  These variables are specified when configuring a Google Chat App asset in SOAR.

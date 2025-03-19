@@ -1,6 +1,6 @@
 # File: googlechatapp_connector.py
 
-# Copyright (c) Splunk, 2024
+# Copyright (c) Splunk, 2024-2025
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 # and limitations under the License.
 
 # Python 3 Compatibility imports
-from __future__ import print_function, unicode_literals
 
 import base64
 import json
@@ -31,17 +30,14 @@ from googlechatapp_consts import *
 
 
 class RetVal(tuple):
-
     def __new__(cls, val1, val2=None):
         return tuple.__new__(RetVal, (val1, val2))
 
 
 class GoogleChatAppConnector(BaseConnector):
-
     def __init__(self):
-
         # Call the BaseConnectors init first
-        super(GoogleChatAppConnector, self).__init__()
+        super().__init__()
 
         self._state = None
 
@@ -75,7 +71,7 @@ class GoogleChatAppConnector(BaseConnector):
         except:
             error_text = "Cannot parse error details"
 
-        message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code, error_text)
+        message = f"Status Code: {status_code}. Data from server:\n{error_text}\n"
 
         message = message.replace("{", "{{").replace("}", "}}")
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
@@ -85,14 +81,14 @@ class GoogleChatAppConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(str(e))), None)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, f"Unable to parse JSON response. Error: {e!s}"), None)
 
         # Please specify the status codes here
         if 200 <= r.status_code < 399:
             return RetVal(phantom.APP_SUCCESS, resp_json)
 
         # You should process the error returned in the json
-        message = "Error from server. Status Code: {0} Data from server: {1}".format(r.status_code, r.text.replace("{", "{{").replace("}", "}}"))
+        message = "Error from server. Status Code: {} Data from server: {}".format(r.status_code, r.text.replace("{", "{{").replace("}", "}}"))
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), message)
 
@@ -121,7 +117,7 @@ class GoogleChatAppConnector(BaseConnector):
             return self._process_empty_response(r, action_result)
 
         # everything else is actually an error at this point
-        message = "Can't process response from server. Status Code: {0} Data from server: {1}".format(
+        message = "Can't process response from server. Status Code: {} Data from server: {}".format(
             r.status_code, r.text.replace("{", "{{").replace("}", "}}")
         )
 
@@ -137,7 +133,7 @@ class GoogleChatAppConnector(BaseConnector):
         try:
             request_func = getattr(requests, method)
         except AttributeError:
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Invalid method: {0}".format(method)), resp_json)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, f"Invalid method: {method}"), resp_json)
 
         try:
             r = request_func(
@@ -147,7 +143,7 @@ class GoogleChatAppConnector(BaseConnector):
                 **kwargs,
             )
         except Exception as e:
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(str(e))), resp_json)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, f"Error Connecting to server. Details: {e!s}"), resp_json)
 
         return self._process_response(r, action_result)
 
@@ -186,12 +182,12 @@ class GoogleChatAppConnector(BaseConnector):
         ret_val, resp_json = self._make_rest_call(action_result=action_result, url=token_url, data=payload, method="post")
 
         if phantom.is_fail(ret_val):
-            return action_result.set_status(phantom.APP_ERROR, "Failure in tokenization process {}".format(resp_json))
+            return action_result.set_status(phantom.APP_ERROR, f"Failure in tokenization process {resp_json}")
 
         try:
             self._access_token = resp_json["access_token"]
         except:
-            return action_result.set_status(phantom.APP_ERROR, "There is no access token inside request response: {}".format(resp_json))
+            return action_result.set_status(phantom.APP_ERROR, f"There is no access token inside request response: {resp_json}")
 
         self._state["access_token"] = self.encode_token(resp_json["access_token"])
         if grant_type != "refresh_token":
@@ -221,7 +217,7 @@ class GoogleChatAppConnector(BaseConnector):
     def _handle_create_message(self, param):
         # Implement the handler here
         # use self.save_progress(...) to send progress messages back to the platform
-        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
 
         # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
@@ -250,23 +246,23 @@ class GoogleChatAppConnector(BaseConnector):
 
         headers = {"Authorization": "Bearer " + self._access_token, "Content-Type": "application/json; charset=utf-8"}
 
-        url = self._base_url + "/v1/{}/messages".format(parent)
+        url = self._base_url + f"/v1/{parent}/messages"
 
         # make rest call
         ret_val, response = self._make_rest_call(url, action_result, method="post", params=parameters, headers=headers, json=json_content)
 
         if phantom.is_fail(ret_val):
-            return action_result.set_status(phantom.APP_ERROR, "Create message request failed: {}".format(response))
+            return action_result.set_status(phantom.APP_ERROR, f"Create message request failed: {response}")
 
         # Add the response into the data section
         action_result.add_data(response)
-        self.save_progress("Message sent to {}".format(parent))
-        return action_result.set_status(phantom.APP_SUCCESS, "Message sent to {}".format(parent))
+        self.save_progress(f"Message sent to {parent}")
+        return action_result.set_status(phantom.APP_SUCCESS, f"Message sent to {parent}")
 
     def _handle_read_message(self, param):
         # Implement the handler here
         # use self.save_progress(...) to send progress messages back to the platform
-        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
 
         # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
@@ -281,7 +277,7 @@ class GoogleChatAppConnector(BaseConnector):
 
         # Required values can be accessed directly
         name = param["name"]
-        url = self._base_url + "/v1/{}".format(name)
+        url = self._base_url + f"/v1/{name}"
 
         headers = {"Authorization": "Bearer " + self._access_token, "Content-Type": "application/json; charset=utf-8"}
 
@@ -289,12 +285,12 @@ class GoogleChatAppConnector(BaseConnector):
         ret_val, response = self._make_rest_call(url, action_result, method="get", params=None, headers=headers)
 
         if phantom.is_fail(ret_val):
-            return action_result.set_status(phantom.APP_ERROR, "Read message request failed: {}".format(response))
+            return action_result.set_status(phantom.APP_ERROR, f"Read message request failed: {response}")
 
         # Add the response into the data section
         action_result.add_data(response)
-        self.save_progress("Reading message {}".format(name))
-        return action_result.set_status(phantom.APP_SUCCESS, "Reading message {}".format(name))
+        self.save_progress(f"Reading message {name}")
+        return action_result.set_status(phantom.APP_SUCCESS, f"Reading message {name}")
 
     def handle_action(self, param):
         ret_val = phantom.APP_SUCCESS
@@ -368,7 +364,6 @@ def main():
     verify = args.verify
 
     if username is not None and password is None:
-
         # User specified a username but not a password, so ask
         import getpass
 

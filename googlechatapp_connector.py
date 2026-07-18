@@ -17,6 +17,7 @@
 
 import base64
 import json
+import re
 
 # Phantom App imports
 import phantom.app as phantom
@@ -222,6 +223,10 @@ class GoogleChatAppConnector(BaseConnector):
         # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
+        parent = param["parent_space"]
+        if not re.fullmatch(r"spaces/[^/?#]+", parent):
+            return action_result.set_status(phantom.APP_ERROR, "Parent space must match spaces/{space}")
+
         gen_ret_val = self._generate_new_access_token(action_result, grant_type="refresh_token")
         if phantom.is_fail(gen_ret_val):
             # the call to the 3rd party device or service failed, action result should contain all the error details
@@ -231,7 +236,6 @@ class GoogleChatAppConnector(BaseConnector):
         # Access action parameters passed in the 'param' dictionary
 
         # Required values can be accessed directly
-        parent = param["parent_space"]
         json_content = {"text": param["text_message"]}
 
         # Optional values should use the .get() function
@@ -267,6 +271,10 @@ class GoogleChatAppConnector(BaseConnector):
         # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
+        name = param["name"]
+        if not re.fullmatch(r"spaces/[^/?#]+/messages/[^/?#]+", name):
+            return action_result.set_status(phantom.APP_ERROR, "Message name must match spaces/{space}/messages/{message}")
+
         gen_ret_val = self._generate_new_access_token(action_result, grant_type="refresh_token")
         if phantom.is_fail(gen_ret_val):
             # the call to the 3rd party device or service failed, action result should contain all the error details
@@ -276,7 +284,6 @@ class GoogleChatAppConnector(BaseConnector):
         # Access action parameters passed in the 'param' dictionary
 
         # Required values can be accessed directly
-        name = param["name"]
         url = self._base_url + f"/v1/{name}"
 
         headers = {"Authorization": "Bearer " + self._access_token, "Content-Type": "application/json; charset=utf-8"}

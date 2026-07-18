@@ -20,6 +20,7 @@ import json
 import re
 
 # Phantom App imports
+import encryption_helper
 import phantom.app as phantom
 import requests
 from bs4 import BeautifulSoup
@@ -149,16 +150,13 @@ class GoogleChatAppConnector(BaseConnector):
         return self._process_response(r, action_result)
 
     def encode_token(self, token):
-        sample_string_bytes = token.encode("ascii")
-        base64_bytes = base64.b64encode(sample_string_bytes)
-        base64_string = base64_bytes.decode("ascii")
-        return base64_string
+        return encryption_helper.encrypt(token, self.get_asset_id())
 
-    def decode_token(self, token_base64):
-        base64_bytes = token_base64.encode("ascii")
-        sample_string_bytes = base64.b64decode(base64_bytes)
-        sample_string = sample_string_bytes.decode("ascii")
-        return sample_string
+    def decode_token(self, stored_token):
+        try:
+            return encryption_helper.decrypt(stored_token, self.get_asset_id())
+        except Exception:
+            return base64.b64decode(stored_token.encode("ascii"), validate=True).decode("ascii")
 
     def _generate_new_access_token(self, action_result, grant_type='"authorization_code"'):
         """This function is used to generate new access token using the code obtained on authorization."""
@@ -193,7 +191,8 @@ class GoogleChatAppConnector(BaseConnector):
         self._state["access_token"] = self.encode_token(resp_json["access_token"])
         if grant_type != "refresh_token":
             self._refresh_token = resp_json.get("refresh_token")
-            self._state["refresh_token"] = self.encode_token(resp_json["refresh_token"])
+            if self._refresh_token:
+                self._state["refresh_token"] = self.encode_token(self._refresh_token)
 
         return phantom.APP_SUCCESS
 
@@ -327,9 +326,24 @@ class GoogleChatAppConnector(BaseConnector):
             self.debug_print("Resetting the state file with the default format")
             self._state = {"app_version": self.get_app_json().get("app_version")}
         else:
-            if self._state.get("refresh_token"):
-                self._refresh_token = self.decode_token(self._state["refresh_token"])
-            else:
+            for token_name in ("access_token", "refresh_token"):
+                stored_token = self._state.get(token_name)
+                if not stored_token:
+                    continue
+                try:
+                    token = self.decode_token(stored_token)
+                except Exception as e:
+                    self.debug_print(f"Unable to decrypt {token_name}: {e!s}")
+                    self._state.pop(token_name, None)
+                    continue
+                if not stored_token.startswith("iv:"):
+                    self._state[token_name] = self.encode_token(token)
+                if token_name == "access_token":
+                    self._access_token = token
+                else:
+                    self._refresh_token = token
+
+            if not self._refresh_token:
                 self.save_progress(
                     "There is not Refresh token inside the state file, make sure you are runinng test connectivity action \
                                  or do it at first before further app exploration."

@@ -139,7 +139,7 @@ class GoogleChatAppConnector(BaseConnector):
             r = request_func(
                 url,
                 # auth=(username, password),  # basic authentication
-                verify=config.get("verify_server_cert", False),
+                verify=config.get("verify_server_cert", True),
                 **kwargs,
             )
         except Exception as e:

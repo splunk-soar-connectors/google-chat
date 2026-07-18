@@ -34,6 +34,7 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 **client_secret** | required | password | Auth application Client Secret |
 **code** | required | password | Code to receive authorization token. Read README.md on how to obtain this |
 **redirect_uri** | required | string | Redirect URL for authorization |
+**verify_server_cert** | optional | boolean | Verify TLS certificates for Google API requests |
 
 ### Supported Actions
 

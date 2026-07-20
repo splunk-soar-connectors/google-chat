@@ -1,7 +1,7 @@
 # Google Chat App
 
 Publisher: Splunk Community <br>
-Connector Version: 1.0.1 <br>
+Connector Version: 1.0.2 <br>
 Product Vendor: Google Cloud <br>
 Product Name: Google Chat App <br>
 Minimum Product Version: 6.1.1.211

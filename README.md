@@ -1,9 +1,9 @@
 # Google Chat App
 
-Publisher: Splunk Community \
-Connector Version: 1.0.1 \
-Product Vendor: Google Cloud \
-Product Name: Google Chat App \
+Publisher: Splunk Community <br>
+Connector Version: 1.0.1 <br>
+Product Vendor: Google Cloud <br>
+Product Name: Google Chat App <br>
 Minimum Product Version: 6.1.1.211
 
 This app integrate services with Google Chat and manage Chat resources such as i.e messages. Remmeber that user will need authentication code, check Github or SplunkBase for information on how to obtain it
@@ -34,18 +34,19 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 **client_secret** | required | password | Auth application Client Secret |
 **code** | required | password | Code to receive authorization token. Read README.md on how to obtain this |
 **redirect_uri** | required | string | Redirect URL for authorization |
+**verify_server_cert** | optional | boolean | Verify TLS certificates for Google API requests |
 
 ### Supported Actions
 
-[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using supplied configuration \
-[create message](#action-create-message) - Creates a message in a Google Chat space \
+[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using supplied configuration <br>
+[create message](#action-create-message) - Creates a message in a Google Chat space <br>
 [read message](#action-read-message) - Returns details about a message
 
 ## action: 'test connectivity'
 
 Validate the asset configuration for connectivity using supplied configuration
 
-Type: **test** \
+Type: **test** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -60,7 +61,7 @@ No Output
 
 Creates a message in a Google Chat space
 
-Type: **generic** \
+Type: **generic** <br>
 Read only: **False**
 
 #### Action Parameters
@@ -91,7 +92,7 @@ summary.total_objects_successful | numeric | | |
 
 Returns details about a message
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -123,7 +124,7 @@ ______________________________________________________________________
 
 Auto-generated Splunk SOAR Connector documentation.
 
-Copyright 2025 Splunk Inc.
+Copyright 2026 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

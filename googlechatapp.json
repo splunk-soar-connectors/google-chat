@@ -7,7 +7,7 @@
     "logo": "logo_googlechatapp.svg",
     "logo_dark": "logo_googlechatapp_dark.svg",
     "product_name": "Google Chat App",
-    "python_version": "3",
+    "python_version": "3.9, 3.13",
     "product_version_regex": ".*",
     "publisher": "Splunk Community",
     "contributors": [
@@ -15,7 +15,7 @@
             "name": "Patryk Dros"
         }
     ],
-    "license": "Copyright (c) Splunk, 2024-2025",
+    "license": "Copyright (c) Splunk, 2024-2026",
     "app_version": "1.0.1",
     "utctime_updated": "2024-04-16T15:27:25.341827Z",
     "package_name": "phantom_googlechatapp",
@@ -48,6 +48,12 @@
             "required": true,
             "default": "http://localhost",
             "order": 3
+        },
+        "verify_server_cert": {
+            "description": "Verify TLS certificates for Google API requests",
+            "data_type": "boolean",
+            "default": true,
+            "order": 4
         }
     },
     "actions": [
@@ -229,5 +235,11 @@
             },
             "versions": "EQ(*)"
         }
-    ]
+    ],
+    "pip39_dependencies": {
+        "wheel": []
+    },
+    "pip313_dependencies": {
+        "wheel": []
+    }
 }

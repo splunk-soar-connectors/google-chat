@@ -17,7 +17,7 @@
 
 import base64
 import json
-import re
+from urllib.parse import quote
 
 # Phantom App imports
 import encryption_helper
@@ -53,6 +53,26 @@ class GoogleChatAppConnector(BaseConnector):
         self._client_secret = None
         self._code = None
         self._redirect_uri = None
+
+    @staticmethod
+    def _canonicalize_resource_name(value, template):
+        parts = str(value).split("/")
+        if len(parts) != len(template):
+            return None
+
+        canonical_parts = []
+        for part, fixed_part in zip(parts, template):
+            if fixed_part is not None:
+                if part != fixed_part:
+                    return None
+                canonical_parts.append(part)
+                continue
+
+            if not part or part in {".", ".."} or any(char in part for char in "\\?#") or any(ord(char) <= 32 for char in part):
+                return None
+            canonical_parts.append(quote(part, safe=""))
+
+        return "/".join(canonical_parts)
 
     def _process_empty_response(self, response, action_result):
         if response.status_code == 200:
@@ -222,8 +242,8 @@ class GoogleChatAppConnector(BaseConnector):
         # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        parent = param["parent_space"]
-        if not re.fullmatch(r"spaces/[^/?#]+", parent):
+        parent = self._canonicalize_resource_name(param["parent_space"], ("spaces", None))
+        if parent is None:
             return action_result.set_status(phantom.APP_ERROR, "Parent space must match spaces/{space}")
 
         gen_ret_val = self._generate_new_access_token(action_result, grant_type="refresh_token")
@@ -270,8 +290,8 @@ class GoogleChatAppConnector(BaseConnector):
         # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        name = param["name"]
-        if not re.fullmatch(r"spaces/[^/?#]+/messages/[^/?#]+", name):
+        name = self._canonicalize_resource_name(param["name"], ("spaces", None, "messages", None))
+        if name is None:
             return action_result.set_status(phantom.APP_ERROR, "Message name must match spaces/{space}/messages/{message}")
 
         gen_ret_val = self._generate_new_access_token(action_result, grant_type="refresh_token")

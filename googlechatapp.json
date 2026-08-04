@@ -16,8 +16,8 @@
         }
     ],
     "license": "Copyright (c) Splunk, 2024-2026",
-    "app_version": "1.0.2",
-    "utctime_updated": "2026-07-20T18:14:23.766655Z",
+    "app_version": "1.0.3",
+    "utctime_updated": "2026-08-04T00:09:59.619167Z",
     "package_name": "phantom_googlechatapp",
     "main_module": "googlechatapp_connector.py",
     "min_phantom_version": "6.1.1.211",
